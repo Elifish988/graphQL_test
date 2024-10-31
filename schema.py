@@ -4,31 +4,31 @@ from db.database import db_session
 from db.models import CountriesModel, CitiesModel, MissionsModel, TargetTypesModel, TargetsModel
 
 
-class Countries(graphene.ObjectType):
+class Countries(SQLAlchemyObjectType):
     class Meta:
         model = CountriesModel
         interfaces = (graphene.relay.Node,)
 
 
-class Cities(graphene.ObjectType):
+class Cities(SQLAlchemyObjectType):
     class Meta:
         model = CitiesModel
         interfaces = (graphene.relay.Node,)
 
 
-class Missions(graphene.ObjectType):
+class Missions(SQLAlchemyObjectType):
     class Meta:
         model = MissionsModel
         interfaces = (graphene.relay.Node,)
 
 
-class TargetTypes(graphene.ObjectType):
+class TargetTypes(SQLAlchemyObjectType):
     class Meta:
         model = TargetTypesModel
         interfaces = (graphene.relay.Node,)
 
 
-class Targets(graphene.ObjectType):
+class Targets(SQLAlchemyObjectType):
     class Meta:
         model = TargetsModel
         interfaces = (graphene.relay.Node,)
@@ -48,10 +48,12 @@ class Query(graphene.ObjectType):
         return db_session.query(MissionsModel).filter(MissionsModel.mission_date.between(min_date, max_date)).all()
 
     def resolve_missions_by_country(self, info, country_name):
-        return db_session.query(MissionsModel).filter(MissionsModel.target.city.countries.country_name == country_name).all()
+        return db_session.query(MissionsModel).join(TargetsModel).join(CitiesModel).filter(
+            CitiesModel.country_id == country_name).all()
 
     def resolve_missions_by_target_industry(self, info, target_industry):
-        return db_session.query(MissionsModel).filter(MissionsModel.target.target_industry == target_industry).all()
+        return db_session.query(MissionsModel).join(TargetsModel).filter(
+            TargetsModel.target_industry == target_industry).all()
 
 
 class CreateMission(graphene.Mutation):
