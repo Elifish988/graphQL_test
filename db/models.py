@@ -1,43 +1,42 @@
-from sqlalchemy import Column, Integer, String, Date, Table, ForeignKey, Float
+from sqlalchemy import Column, Integer, String, Date, ForeignKey, Numeric
 from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 
 Base = declarative_base()
 
-
 class CountriesModel(Base):
     __tablename__ = 'countries'
-    countries_id = Column(Integer, primary_key=True)
-    countries_name = Column(String)
+    country_id  = Column(Integer, primary_key=True)
+    country_name = Column(String)
 
-    city = relationship("CitiesModel", back_populates="countries")
+    cities = relationship("CitiesModel", back_populates="country")  # Updated back_populates
 
 
 class CitiesModel(Base):
     __tablename__ = 'cities'
-    cities_id = Column(Integer, primary_key=True)
-    cities_name = Column(String)
-    countries_id = Column(Integer, ForeignKey("countries.countries_id"))
-    latitude = Column(Float)
-    longitude = Column(Float)
+    city_id  = Column(Integer, primary_key=True)
+    city_name = Column(String)
+    country_id = Column(Integer, ForeignKey("countries.country_id"))
+    latitude = Column(Numeric)
+    longitude = Column(Numeric)
 
-    countries = relationship("CountriesModel", back_populates="city")
-    target = relationship("TargetsModel", back_populates="city")
+    country = relationship("CountriesModel", back_populates="cities")  # Updated relationship name
+    targets = relationship("TargetsModel", back_populates="city")  # Updated back_populates
 
 
 class MissionsModel(Base):
     __tablename__ = 'missions'
     mission_id = Column(Integer, primary_key=True)
     mission_date = Column(Date)
-    airborne_aircraft = Column(Float)
-    attacking_aircraft = Column(Float)
-    bombing_aircraft = Column(Float)
-    aircraft_returned = Column(Float)
-    aircraft_failed = Column(Float)
-    aircraft_damaged = Column(Float)
-    aircraft_lost = Column(Float)
+    airborne_aircraft = Column(Numeric(10, 2))
+    attacking_aircraft = Column(Numeric(10, 2))
+    bombing_aircraft = Column(Numeric(10, 2))
+    aircraft_returned = Column(Numeric(10, 2))
+    aircraft_failed = Column(Numeric(10, 2))
+    aircraft_damaged = Column(Numeric(10, 2))
+    aircraft_lost = Column(Numeric(10, 2))
 
-    target = relationship("TargetsModel", back_populates="mission")
+    targets = relationship("TargetsModel", back_populates="mission")  # Updated relationship name
 
 
 class TargetTypesModel(Base):
@@ -45,20 +44,18 @@ class TargetTypesModel(Base):
     target_type_id = Column(Integer, primary_key=True)
     target_type_name = Column(String)
 
-    target = relationship("TargetsModel", back_populates="target_type")
+    targets = relationship("TargetsModel", back_populates="target_type")  # Updated back_populates
+
 
 class TargetsModel(Base):
     __tablename__ = 'targets'
     target_id = Column(Integer, primary_key=True)
-    mission_id = Column(Integer, ForeignKey("MissionsModel.mission_id"))
+    mission_id = Column(Integer, ForeignKey("missions.mission_id"))
     target_industry = Column(String)
-    city_id = Column(Integer, ForeignKey("CitiesModel.cities_id"))
-    target_type_id = Column(Integer, ForeignKey("TargetTypesModel.target_type_id"))
+    city_id = Column(Integer, ForeignKey("cities.city_id"))  # Correct ForeignKey reference
+    target_type_id = Column(Integer, ForeignKey("targettypes.target_type_id"))
     target_priority = Column(Integer)
 
-    mission = relationship("MissionsModel", back_populates="target")
-    city = relationship("CitiesModel", back_populates="target")
-    target_type = relationship("TargetTypesModel", back_populates="target")
-
-
-
+    mission = relationship("MissionsModel", back_populates="targets")  # Updated relationship name
+    city = relationship("CitiesModel", back_populates="targets")  # Updated relationship name
+    target_type = relationship("TargetTypesModel", back_populates="targets")  # Updated relationship name
